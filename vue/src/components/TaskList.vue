@@ -48,7 +48,11 @@ export default {
     completedTasks() {
       return this.tasks
         .filter(task => !!task.is_completed)
-        .sort((a, b) => (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
+        .sort((a, b) => {
+          const aDate = new Date(a.completed_on).getTime();
+          const bDate = new Date(b.completed_on).getTime();
+          return aDate < bDate ? 1 : aDate > bDate ? -1 : 0;
+        });
     }
   },
   async created() {
