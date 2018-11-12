@@ -28,7 +28,7 @@ impl User {
             .get_result(conn)?)
     }
 
-    pub fn delete(self, conn: &PgConnection) -> WResult<User> {
+    fn delete(self, conn: &PgConnection) -> WResult<User> {
         diesel::delete(&self).execute(conn)?;
         Ok(self)
     }
@@ -102,6 +102,23 @@ impl LoginUser {
         let user = User::find_by_email(&self.email, conn)?;
         if bcrypt::verify(&self.password, &user.password)? {
             Ok(user)
+        } else {
+            Err(Error::Unauthorized)
+        }
+    }
+}
+
+#[derive(Deserialize, Validate)]
+pub(crate) struct DeleteUser {
+    #[validate(length(min = "8"))]
+    password: String,
+}
+
+impl DeleteUser {
+    pub fn delete(self, id: i32, conn: &PgConnection) -> WResult<User> {
+        let user = User::find(id, conn)?;
+        if bcrypt::verify(&self.password, &user.password)? {
+            user.delete(conn)
         } else {
             Err(Error::Unauthorized)
         }

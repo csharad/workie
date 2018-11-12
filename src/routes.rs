@@ -3,7 +3,7 @@ use extractors::AuthUser;
 use futures::Future;
 use model::{
     task::{NewTask, Task, TaskPatch},
-    user::{LoginUser, NewUser, User, UserPatch},
+    user::{DeleteUser, LoginUser, NewUser, User, UserPatch},
 };
 use {
     result::{Error, WResult},
@@ -34,8 +34,11 @@ pub(crate) fn update_user(
 pub(crate) fn delete_user(
     req: HttpReq,
     auth: AuthUser,
+    password: Json<DeleteUser>,
 ) -> impl Future<Item = Json<User>, Error = Error> {
-    run_pg(&req, move |conn| Ok(Json(auth.into_inner().delete(&conn)?))).map(move |user| {
+    run_pg(&req, move |conn| {
+        Ok(Json(password.into_inner().delete(auth.id, &conn)?))
+    }).map(move |user| {
         req.forget();
         user
     })
