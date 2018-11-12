@@ -66,10 +66,6 @@ export default new Vuex.Store({
       await axios.post('/logout');
       commit('resetState');
     },
-    async signUp({ commit }, userInfo) {
-      const { data } = await axios.post('/users', userInfo);
-      commit('setMe', data);
-    },
     async getAllTasks({ commit, state }, { force } = {}) {
       if (state.tasks.length === 0 || force) {
         const { data } = await axios.get('/tasks');

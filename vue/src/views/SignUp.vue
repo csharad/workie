@@ -47,6 +47,7 @@ import { nameRules, emailRules, passwordRules } from '../validations';
 
 export default {
   name: 'SignUp',
+  inject: ['axios'],
   data: () => ({
     name: '',
     email: '',
@@ -67,7 +68,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['signUp']),
+    ...mapActions(['login']),
     async trySignUp() {
       if (!this.$refs.form.validate()) {
         return;
@@ -75,11 +76,19 @@ export default {
 
       this.isSubmitting = true;
       try {
-        await this.signUp({
+        // Sign up the user.
+        await this.axios.post('/users', {
           full_name: this.name,
           email: this.email,
           password: this.password
         });
+
+        // Then, immediately login the user.
+        await this.login({
+          email: this.email,
+          password: this.password
+        });
+
         this.$router.push({
           name: 'home'
         });
