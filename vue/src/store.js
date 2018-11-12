@@ -44,8 +44,8 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    async getMe({ commit, state }, { force } = {}) {
-      if (!state.me || force) {
+    async getMe({ commit, state }) {
+      if (!state.me) {
         try {
           const { data } = await axios.get('/users/me');
           commit('setMe', data);
@@ -66,8 +66,8 @@ export default new Vuex.Store({
       await axios.post('/logout');
       commit('resetState');
     },
-    async getAllTasks({ commit, state }, { force } = {}) {
-      if (state.tasks.length === 0 || force) {
+    async getAllTasks({ commit, state }) {
+      if (state.tasks.length === 0) {
         const { data } = await axios.get('/tasks');
         commit('setTasks', data);
       }
