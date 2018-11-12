@@ -80,8 +80,9 @@ pub fn app() -> App<Context> {
                 r.post().with_async(routes::create_user);
             }).resource("/me", |r| {
                 r.get().with(routes::get_user);
-                r.delete().with_async(routes::delete_user);
                 r.method(Method::PATCH).with_async(routes::update_user);
+            }).resource("/me/delete", |r| {
+                r.post().with_async(routes::delete_user);
             })
         }).resource("/login", |r| {
             r.post().with_async(routes::login);
