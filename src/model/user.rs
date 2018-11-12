@@ -1,6 +1,7 @@
 use super::functions::lower;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 use {
     result::{Error, WResult},
     schema::users,
@@ -34,17 +35,21 @@ impl User {
 }
 
 /// A new user to be inserted in the database.
-#[derive(Insertable, Deserialize)]
+#[derive(Insertable, Deserialize, Validate)]
 #[table_name = "users"]
 pub(crate) struct NewUser {
+    #[validate(length(min = "1"))]
     full_name: Option<String>,
+    #[validate(email)]
     email: String,
+    #[validate(length(min = "8"))]
     password: String,
 }
 
 impl NewUser {
     /// Save the user in the database.
     pub fn save(mut self, conn: &PgConnection) -> WResult<User> {
+        self.validate()?;
         // Hash the password before inserting.
         self.password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST)?;
 
@@ -56,17 +61,21 @@ impl NewUser {
 }
 
 /// A patch to update a user in the database.
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, Deserialize, Validate)]
 #[table_name = "users"]
 pub(crate) struct UserPatch {
+    #[validate(length(min = "1"))]
     full_name: Option<Option<String>>,
+    #[validate(email)]
     email: Option<String>,
+    #[validate(length(min = "8"))]
     password: Option<String>,
 }
 
 impl UserPatch {
     /// Update the user with `id`.
     pub fn save(mut self, id: i32, conn: &PgConnection) -> WResult<User> {
+        self.validate()?;
         self.password = if let Some(password) = self.password {
             Some(bcrypt::hash(&password, bcrypt::DEFAULT_COST)?)
         } else {
@@ -79,14 +88,17 @@ impl UserPatch {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub(crate) struct LoginUser {
+    #[validate(email)]
     email: String,
+    #[validate(length(min = "8"))]
     password: String,
 }
 
 impl LoginUser {
     pub fn login(self, conn: &PgConnection) -> WResult<User> {
+        self.validate()?;
         let user = User::find_by_email(&self.email, conn)?;
         if bcrypt::verify(&self.password, &user.password)? {
             Ok(user)

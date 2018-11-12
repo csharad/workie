@@ -3,6 +3,7 @@ use diesel::prelude::*;
 use result::WResult;
 use schema::tasks;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 #[derive(Identifiable, Queryable, Serialize)]
 pub(crate) struct Task {
@@ -41,13 +42,15 @@ struct NewTaskBase {
     user_id: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub(crate) struct NewTask {
+    #[validate(length(min = "1"))]
     task: String,
 }
 
 impl NewTask {
     pub fn save(self, user_id: i32, conn: &PgConnection) -> WResult<Task> {
+        self.validate()?;
         let new_task = NewTaskBase {
             task: self.task,
             created_on: Utc::now().naive_utc(),
@@ -67,14 +70,16 @@ struct TaskPatchBase {
     completed_on: Option<Option<NaiveDateTime>>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub(crate) struct TaskPatch {
+    #[validate(length(min = "1"))]
     task: Option<String>,
     is_completed: Option<bool>,
 }
 
 impl TaskPatch {
     pub fn save(self, id: i32, user_id: i32, conn: &PgConnection) -> WResult<Task> {
+        self.validate()?;
         let task = Task::find_for_user(id, user_id, conn)?;
 
         // Set the completed_on field based on the previous value and current

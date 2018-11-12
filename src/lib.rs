@@ -8,6 +8,10 @@ extern crate chrono;
 extern crate failure;
 extern crate futures;
 extern crate serde;
+extern crate validator;
+#[macro_use]
+extern crate validator_derive;
+extern crate serde_json;
 
 use actix_web::{
     http::Method,

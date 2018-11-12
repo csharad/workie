@@ -1,6 +1,7 @@
-use actix_web::{http::StatusCode, HttpResponse, ResponseError};
+use actix_web::{http::StatusCode, HttpResponse, ResponseError, Body};
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
 use failure::Fail;
+use validator::ValidationErrors;
 
 pub(crate) type WResult<T> = Result<T, Error>;
 
@@ -12,6 +13,8 @@ pub(crate) enum Error {
     Bcrypt(#[cause] bcrypt::BcryptError),
     #[fail(display = "R2D2PoolError: {}", _0)]
     R2D2(#[cause] diesel::r2d2::PoolError),
+    #[fail(display = "ValidationError: {}", _0)]
+    Validation(#[cause] ValidationErrors),
     #[fail(display = "The request is unauthorized.")]
     Unauthorized,
 }
@@ -28,16 +31,36 @@ impl From<bcrypt::BcryptError> for Error {
     }
 }
 
+impl From<ValidationErrors> for Error {
+    fn from(err: ValidationErrors) -> Error {
+        Error::Validation(err)
+    }
+}
+
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         match self {
             Error::Diesel(err) => build_diesel_error(err),
             Error::Bcrypt(_) => internal_server_error(),
             Error::R2D2(_) => internal_server_error(),
+            Error::Validation(err) => {
+                let errors = match serde_json::to_string(err) {
+                    Ok(errors) => errors,
+                    Err(_) => return internal_server_error()
+                };
+                message(
+                    StatusCode::BAD_REQUEST,
+                    format!("{{ 
+                        \"kind\": \"VALIDATION\", 
+                        \"message\": \"Request failed validation constraints.\", 
+                        \"errors\": {} 
+                    }}", errors)
+                )
+            },
             Error::Unauthorized => message(
                 StatusCode::UNAUTHORIZED,
                 r#"{ "kind": "UNAUTHORIZED", "message": "Request in unauthorized" }"#,
-            ),
+            )
         }
     }
 }
@@ -71,7 +94,7 @@ fn build_database_error(kind: &DatabaseErrorKind) -> HttpResponse {
     }
 }
 
-fn message(code: StatusCode, body: &'static str) -> HttpResponse {
+fn message<T: Into<Body>>(code: StatusCode, body: T) -> HttpResponse {
     HttpResponse::build(code)
         .header("Content-Type", "application/json")
         .body(body)
