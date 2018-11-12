@@ -27,7 +27,7 @@ pub(crate) fn update_user(
     user: Json<UserPatch>,
 ) -> impl Future<Item = Json<User>, Error = Error> {
     run_pg(&req, move |conn| {
-        Ok(Json(user.into_inner().save(auth.id, &conn)?))
+        Ok(Json(user.into_inner().save(auth.into_inner(), &conn)?))
     })
 }
 

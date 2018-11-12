@@ -61,29 +61,48 @@ impl NewUser {
 }
 
 /// A patch to update a user in the database.
-#[derive(AsChangeset, Deserialize, Validate)]
+#[derive(AsChangeset)]
 #[table_name = "users"]
-pub(crate) struct UserPatch {
-    #[validate(length(min = "1"))]
+struct UserPatchBase {
     full_name: Option<Option<String>>,
+    email: Option<String>,
+    password: Option<String>,
+}
+
+#[derive(Deserialize, Validate)]
+pub(crate) struct UserPatch {
+    full_name: Option<String>,
     #[validate(email)]
     email: Option<String>,
     #[validate(length(min = "8"))]
-    password: Option<String>,
+    new_password: Option<String>,
+    #[validate(length(min = "8"))]
+    password: String,
 }
 
 impl UserPatch {
     /// Update the user with `id`.
-    pub fn save(mut self, id: i32, conn: &PgConnection) -> WResult<User> {
+    pub fn save(self, user: User, conn: &PgConnection) -> WResult<User> {
         self.validate()?;
-        self.password = if let Some(password) = self.password {
+        if !bcrypt::verify(&self.password, &user.password)? {
+            return Err(Error::Unauthorized);
+        }
+
+        let password = if let Some(password) = self.new_password {
             Some(bcrypt::hash(&password, bcrypt::DEFAULT_COST)?)
         } else {
             None
         };
-        let user = diesel::update(users::table.find(id))
-            .set(self)
-            .get_result(conn)?;
+
+        let user_patch = UserPatchBase {
+            full_name: self
+                .full_name
+                .map(|name| if name.is_empty() { None } else { Some(name) }),
+            email: self.email,
+            password,
+        };
+
+        let user = diesel::update(&user).set(user_patch).get_result(conn)?;
         Ok(user)
     }
 }
