@@ -9,13 +9,13 @@ export const nameRules = ({ required = false }) =>
 
 export const emailRules = ({ notUnique, notFound } = {}) => [
   v => !!v || 'Email is required.',
-  v => validateEmail(v) || 'Does not look like a valid email.',
+  v => (!!v && validateEmail(v)) || 'Does not look like a valid email.',
   () => !notUnique || 'This email is already registered.',
   () => !notFound || 'This email is not registered.'
 ];
 
 export const passwordRules = ({ wrong } = {}) => [
   v => !!v || 'Password is required.',
-  v => v.length >= 8 || 'Password must be atleast 8 characters long.',
+  v => (!!v && v.length >= 8) || 'Password must be atleast 8 characters long.',
   () => !wrong || 'Given password is wrong.'
 ];

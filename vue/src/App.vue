@@ -11,7 +11,10 @@
         <v-btn flat :to="{ name: 'login' }">Login</v-btn>
         <v-btn flat :to="{ name: 'sign-up' }">Sign Up</v-btn>
       </template>
-      <v-btn v-else flat @click="tryLogout">Logout</v-btn>
+      <template v-else>
+        <v-btn flat :to="{ name: 'settings' }">Settings</v-btn>
+        <v-btn flat @click="tryLogout">Logout</v-btn>
+      </template>
     </v-toolbar>
     <router-view></router-view>
   </v-app>
