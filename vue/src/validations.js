@@ -14,8 +14,11 @@ export const emailRules = ({ notUnique, notFound } = {}) => [
   () => !notFound || 'This email is not registered.'
 ];
 
-export const passwordRules = ({ wrong } = {}) => [
-  v => !!v || 'Password is required.',
-  v => (!!v && v.length >= 8) || 'Password must be atleast 8 characters long.',
+export const passwordRules = ({ wrong, required = true } = {}) => [
+  v => (required ? !!v || 'Password is required.' : true),
+  v =>
+    required || !!v
+      ? (!!v && v.length >= 8) || 'Password must be atleast 8 characters long.'
+      : true,
   () => !wrong || 'Given password is wrong.'
 ];

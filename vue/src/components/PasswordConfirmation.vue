@@ -8,6 +8,8 @@
           type="password"
           :rules="passwordRules"
           v-model="password"
+          autofocus
+          v-if="confirmation"
         ></v-text-field>
         <v-layout>
           <v-spacer></v-spacer>
@@ -34,7 +36,6 @@ import { passwordRules } from '../validations';
 
 export default {
   name: 'PasswordConfirmation',
-  inject: ['axios'],
   props: {
     confirmation: String,
     data: Object
@@ -55,40 +56,54 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['deleteMe']),
-    close() {
+    ...mapActions(['deleteMe', 'updateMe']),
+    close(kind) {
       this.$refs.form.reset();
-      this.$emit('close');
+      this.$emit('close', kind);
     },
     async ok() {
       if (!this.$refs.form.validate()) {
         return;
       }
-      if (this.confirmation === 'delete') {
-        await this.deleteUser();
-      }
-    },
-    async deleteUser() {
       this.progress = true;
       try {
-        await this.deleteMe({
-          password: this.password
-        });
-        this.$emit('close');
-        this.$router.push({
-          name: 'home'
-        });
+        if (this.confirmation === 'delete') {
+          await this.deleteUser();
+        } else if (this.confirmation === 'update') {
+          await this.updateUser();
+        }
       } catch (e) {
         const kind = e.response.data.kind;
         if (kind === 'UNAUTHORIZED') {
           this.wrongPassword = true;
           this.$nextTick(() => this.$refs.form.validate());
+        } else if (kind === 'NOT_UNIQUE') {
+          this.close(kind);
         } else {
           this.progress = false;
           throw e;
         }
       }
       this.progress = false;
+    },
+    async deleteUser() {
+      await this.deleteMe({
+        password: this.password
+      });
+      this.close();
+      this.$router.push({
+        name: 'home'
+      });
+    },
+    async updateUser() {
+      const { name, email, password } = this.data;
+      await this.updateMe({
+        full_name: name,
+        email,
+        new_password: password.length === 0 ? null : password,
+        password: this.password
+      });
+      this.close();
     }
   }
 };

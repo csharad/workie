@@ -18,6 +18,11 @@ export default new Vuex.Store({
     setMe(state, user) {
       state.me = user;
     },
+    updateMe(state, user) {
+      Object.keys(user).map(key => {
+        state.me[key] = user[key];
+      });
+    },
     resetState(state) {
       const s = initialState();
       Object.keys(s).forEach(key => {
@@ -57,6 +62,10 @@ export default new Vuex.Store({
           throw e;
         }
       }
+    },
+    async updateMe({ commit }, update) {
+      const { data } = await axios.patch('/users/me', update);
+      commit('updateMe', data);
     },
     async login({ commit }, credentials) {
       const { data } = await axios.post('/login', credentials);
