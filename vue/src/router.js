@@ -40,6 +40,9 @@ router.beforeEach(async (to, from, next) => {
   if ((to.name === 'login' || to.name === 'sign-up') && store.state.me) {
     // Hide login / sign-up routes if already logged in.
     next({ name: 'home' });
+  } else if (to.name === 'settings' && !store.state.me) {
+    // Hide settings page if not logged in.
+    next({ name: 'login' });
   } else {
     next();
   }
