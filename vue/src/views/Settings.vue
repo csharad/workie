@@ -97,6 +97,7 @@ export default {
       this.confirmation = null;
       if (err === 'NOT_UNIQUE') {
         this.emailNotUnique = true;
+        this.$nextTick(() => this.$refs.form.validate());
       } else {
         this.password = '';
       }
