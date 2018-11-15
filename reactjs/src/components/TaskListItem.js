@@ -7,7 +7,7 @@ import {
   withStyles
 } from '@material-ui/core';
 import { connect } from 'react-redux';
-import { toggleTaskCompleted } from '../actions';
+import { toggleTaskCompleted, deleteTask } from '../actions';
 
 const styles = theme => ({
   listItem: {
@@ -54,7 +54,7 @@ class TaskListItem extends Component {
         <ListItemText classes={{ root: classes.listItemText }}>
           {task.task}
         </ListItemText>
-        <IconButton className={classes.trash}>
+        <IconButton className={classes.trash} onClick={this.handleDelete}>
           <Icon>delete</Icon>
         </IconButton>
       </ListItem>
@@ -64,6 +64,11 @@ class TaskListItem extends Component {
   toggleCompleted = async () => {
     const { task, dispatch } = this.props;
     await dispatch(toggleTaskCompleted(task.id, !task.is_completed));
+  };
+
+  handleDelete = async () => {
+    const { task, dispatch } = this.props;
+    await dispatch(deleteTask(task.id));
   };
 }
 

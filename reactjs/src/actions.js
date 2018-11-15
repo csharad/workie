@@ -63,6 +63,11 @@ export const toggleTaskCompleted = (id, isCompleted) => async dispatch => {
   dispatch(updateTask(data));
 };
 
+export const deleteTask = id => async dispatch => {
+  await axios.delete(`/tasks/${id}`);
+  dispatch(removeTask(id));
+};
+
 export function addTask(task) {
   return {
     type: 'ADD_TASK',
@@ -86,3 +91,11 @@ export function updateTask(task) {
   };
 }
 updateTask.TYPE = 'UPDATE_TASK';
+
+export function removeTask(id) {
+  return {
+    type: 'REMOVE_TASK',
+    id
+  };
+}
+removeTask.TYPE = 'REMOVE_TASK';

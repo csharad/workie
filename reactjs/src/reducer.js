@@ -1,4 +1,11 @@
-import { setMe, resetState, addTask, setTasks, updateTask } from './actions';
+import {
+  setMe,
+  resetState,
+  addTask,
+  setTasks,
+  updateTask,
+  removeTask
+} from './actions';
 
 const initialState = {
   me: null,
@@ -37,6 +44,11 @@ export default function(state = initialState, action) {
           }
           return task;
         })
+      };
+    case removeTask.TYPE:
+      return {
+        ...state,
+        tasks: state.tasks.filter(task => task.id !== action.id)
       };
     default:
       return state;
