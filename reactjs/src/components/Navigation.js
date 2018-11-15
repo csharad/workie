@@ -2,6 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { AppBar, Toolbar, Button, withStyles } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { logout } from '../actions';
+import { withRouter } from 'react-router-dom';
 
 const styles = {
   logo: {
@@ -22,7 +24,9 @@ class Navigation extends Component {
       menu = (
         <Fragment>
           <BtnLink to="/settings">Settings</BtnLink>
-          <Button color="inherit">Logout</Button>
+          <Button color="inherit" onClick={this.handleLogout}>
+            Logout
+          </Button>
         </Fragment>
       );
     } else {
@@ -45,10 +49,16 @@ class Navigation extends Component {
       </AppBar>
     );
   }
+
+  handleLogout = async () => {
+    const { dispatch, history } = this.props;
+    await dispatch(logout());
+    history.push('/');
+  };
 }
 
 export default withStyles(styles)(
   connect(state => ({
     isLogged: !!state.me
-  }))(Navigation)
+  }))(withRouter(Navigation))
 );

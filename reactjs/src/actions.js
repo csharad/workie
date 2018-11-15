@@ -22,6 +22,11 @@ export const getMe = () => async (dispatch, getState) => {
   }
 };
 
+export const logout = () => async dispatch => {
+  await axios.post('/logout');
+  dispatch(resetState());
+};
+
 export function setMe(user) {
   return {
     type: 'SET_ME',
@@ -29,3 +34,10 @@ export function setMe(user) {
   };
 }
 setMe.TYPE = 'SET_ME';
+
+export function resetState() {
+  return {
+    type: 'RESET_STATE'
+  };
+}
+resetState.TYPE = 'RESET_STATE';

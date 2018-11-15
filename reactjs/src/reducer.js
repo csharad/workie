@@ -1,4 +1,4 @@
-import { setMe } from './actions';
+import { setMe, resetState } from './actions';
 
 const initialState = {
   me: null
@@ -15,6 +15,8 @@ export default function(state = initialState, action) {
         ...state,
         me: action.me
       };
+    case resetState.TYPE:
+      return { ...initialState };
     default:
       return state;
   }
