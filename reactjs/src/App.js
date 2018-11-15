@@ -6,6 +6,8 @@ import Navigation from './components/Navigation';
 import Login from './views/Login';
 import SignUp from './views/SignUp';
 import Settings from './views/Settings';
+import { connect } from 'react-redux';
+import { getMe } from './actions';
 
 class App extends Component {
   routes = [
@@ -14,6 +16,11 @@ class App extends Component {
     { path: '/sign-up', component: SignUp, exact: true },
     { path: '/settings', component: Settings, exact: true }
   ];
+
+  async componentDidMount() {
+    const { dispatch } = this.props;
+    await dispatch(getMe());
+  }
 
   render() {
     return (
@@ -32,4 +39,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default connect()(App);

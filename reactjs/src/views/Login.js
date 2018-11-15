@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
-import {
-  Card,
-  Button,
-  TextField,
-  Grid,
-  Typography,
-  withStyles
-} from '@material-ui/core';
+import { Card, Button, Grid, Typography, withStyles } from '@material-ui/core';
+import { connect } from 'react-redux';
+import { Formik } from 'formik';
+import VTextField from '../components/VTextField';
+import * as yup from 'yup';
+import { login } from '../actions';
+import { withRouter } from 'react-router-dom';
 
 const styles = theme => ({
   container: {
@@ -31,6 +30,30 @@ class Login extends Component {
   render() {
     const { classes } = this.props;
 
+    const form = ({ handleSubmit, isSubmitting }) => (
+      <form className={classes.form} onSubmit={handleSubmit}>
+        <VTextField name="email" label="Email" fullWidth margin="normal" />
+        <VTextField
+          name="password"
+          label="Password"
+          type="password"
+          fullWidth
+          margin="normal"
+        />
+
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          className={classes.button}
+          disabled={isSubmitting}
+        >
+          Login
+        </Button>
+      </form>
+    );
+
     return (
       <Grid container justify="center" className={classes.container}>
         <Grid item md={3}>
@@ -49,30 +72,55 @@ class Login extends Component {
                 </Typography>
               </Grid>
             </Grid>
-
-            <form className={classes.form}>
-              <TextField label="Email" fullWidth margin="normal" />
-              <TextField
-                label="Password"
-                type="password"
-                fullWidth
-                margin="normal"
-              />
-
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.button}
-              >
-                Login
-              </Button>
-            </form>
+            <Formik
+              initialValues={{ email: '', password: '' }}
+              validationSchema={yup.object().shape({
+                email: yup
+                  .string()
+                  .email()
+                  .required(),
+                password: yup
+                  .string()
+                  .min(8)
+                  .required()
+              })}
+              onSubmit={this.tryLogin}
+            >
+              {form}
+            </Formik>
           </Card>
         </Grid>
       </Grid>
     );
   }
+
+  tryLogin = async (form, action) => {
+    const { dispatch, history } = this.props;
+    try {
+      await dispatch(
+        login({
+          email: form.email,
+          password: form.password
+        })
+      );
+      history.push('/');
+    } catch (e) {
+      const kind = e.response.data.kind;
+      if (kind === 'UNAUTHORIZED') {
+        action.setErrors({
+          password: 'The entered password is incorrect.'
+        });
+      } else if (kind === 'NOT_FOUND') {
+        action.setErrors({
+          email: 'This email is not registered.'
+        });
+      } else {
+        action.setSubmitting(false);
+        throw e;
+      }
+    }
+    action.setSubmitting(false);
+  };
 }
 
-export default withStyles(styles)(Login);
+export default withRouter(withStyles(styles)(connect()(Login)));
