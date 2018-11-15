@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { AppBar, Toolbar, Button, withStyles } from '@material-ui/core';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 const styles = {
   logo: {
@@ -14,7 +15,24 @@ function BtnLink(props) {
 
 class Navigation extends Component {
   render() {
-    const { classes } = this.props;
+    const { isLogged, classes } = this.props;
+
+    let menu;
+    if (isLogged) {
+      menu = (
+        <Fragment>
+          <BtnLink to="/settings">Settings</BtnLink>
+          <Button color="inherit">Logout</Button>
+        </Fragment>
+      );
+    } else {
+      menu = (
+        <Fragment>
+          <BtnLink to="/login">Login</BtnLink>
+          <BtnLink to="/sign-up">Sign Up</BtnLink>
+        </Fragment>
+      );
+    }
 
     return (
       <AppBar position="sticky">
@@ -22,16 +40,15 @@ class Navigation extends Component {
           <BtnLink className={classes.logo} to="/">
             Workie
           </BtnLink>
-
-          <BtnLink to="/settings">Settings</BtnLink>
-          <Button color="inherit">Logout</Button>
-
-          <BtnLink to="/login">Login</BtnLink>
-          <BtnLink to="/sign-up">Sign Up</BtnLink>
+          {menu}
         </Toolbar>
       </AppBar>
     );
   }
 }
 
-export default withStyles(styles)(Navigation);
+export default withStyles(styles)(
+  connect(state => ({
+    isLogged: !!state.me
+  }))(Navigation)
+);
