@@ -9,6 +9,10 @@ import {
   Icon
 } from '@material-ui/core';
 import TaskList from '../components/TaskList';
+import { connect } from 'react-redux';
+import { Formik } from 'formik';
+import { createTask } from '../actions';
+import * as yup from 'yup';
 
 const styles = theme => ({
   topSpace: {
@@ -28,30 +32,56 @@ class Home extends Component {
       <Grid container justify="center">
         <Grid item md={5}>
           <Paper className={classes.topSpace}>
-            <form>
-              <TextField
-                placeholder="Enter a task to do"
-                fullWidth
-                InputProps={{
-                  classes: {
-                    input: classes.input
-                  },
-                  endAdornment: (
-                    <InputAdornment>
-                      <IconButton>
-                        <Icon>playlist_add</Icon>
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-              />
-            </form>
+            <Formik
+              initialValues={{ task: '' }}
+              validationSchema={yup.object().shape({
+                task: yup
+                  .string()
+                  .required()
+                  .trim()
+              })}
+              onSubmit={this.handleAddingTask}
+            >
+              {({ values, handleSubmit, handleChange, handleBlur }) => (
+                <form onSubmit={handleSubmit}>
+                  <TextField
+                    name="task"
+                    placeholder="Enter a task to do"
+                    fullWidth
+                    InputProps={{
+                      classes: {
+                        input: classes.input
+                      },
+                      endAdornment: (
+                        <InputAdornment>
+                          <IconButton type="submit">
+                            <Icon>playlist_add</Icon>
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                    value={values.task}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </form>
+              )}
+            </Formik>
             <TaskList />
           </Paper>
         </Grid>
       </Grid>
     );
   }
+
+  handleAddingTask = async (form, action) => {
+    await this.props.dispatch(
+      createTask({
+        task: form.task
+      })
+    );
+    action.resetForm();
+  };
 }
 
-export default withStyles(styles)(Home);
+export default connect()(withStyles(styles)(Home));

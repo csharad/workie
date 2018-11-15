@@ -42,3 +42,32 @@ export function resetState() {
   };
 }
 resetState.TYPE = 'RESET_STATE';
+
+export const createTask = task => async dispatch => {
+  const { data } = await axios.post('/tasks', task);
+  dispatch(addTask(data));
+};
+
+export const listAllTasks = () => async (dispatch, getState) => {
+  const state = getState();
+  if (state.tasks.length === 0) {
+    const { data } = await axios.get('/tasks');
+    dispatch(setTasks(data));
+  }
+};
+
+export function addTask(task) {
+  return {
+    type: 'ADD_TASK',
+    task
+  };
+}
+addTask.TYPE = 'ADD_TASK';
+
+export function setTasks(tasks) {
+  return {
+    type: 'SET_TASKS',
+    tasks
+  };
+}
+setTasks.TYPE = 'SET_TASKS';

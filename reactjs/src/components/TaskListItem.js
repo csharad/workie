@@ -25,15 +25,28 @@ const styles = theme => ({
 
 class TaskListItem extends Component {
   render() {
-    const { classes } = this.props;
+    const { task, classes } = this.props;
 
-    return (
-      <ListItem disableGutters classes={{ root: classes.listItem }}>
+    let tick;
+    if (task.is_completed) {
+      tick = (
+        <IconButton className={classes.check}>
+          <Icon>done_all</Icon>
+        </IconButton>
+      );
+    } else {
+      tick = (
         <IconButton className={classes.check}>
           <Icon>done</Icon>
         </IconButton>
+      );
+    }
+
+    return (
+      <ListItem disableGutters classes={{ root: classes.listItem }}>
+        {tick}
         <ListItemText classes={{ root: classes.listItemText }}>
-          Task text
+          {task.task}
         </ListItemText>
         <IconButton className={classes.trash}>
           <Icon>delete</Icon>

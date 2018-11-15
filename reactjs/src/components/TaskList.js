@@ -1,19 +1,41 @@
 import React, { Component } from 'react';
-import { List } from '@material-ui/core';
+import { List, ListItem, ListItemText, Typography } from '@material-ui/core';
 import TaskListItem from './TaskListItem';
+import { connect } from 'react-redux';
+import { listAllTasks } from '../actions';
 
 class TaskList extends Component {
+  async componentDidMount() {
+    await this.props.dispatch(listAllTasks());
+  }
+
   render() {
+    const { tasks } = this.props;
+
+    let noTask = null;
+    if (tasks.length === 0) {
+      noTask = (
+        <ListItem>
+          <ListItemText disableTypography>
+            <Typography align="center" color="textSecondary">
+              No task yet
+            </Typography>
+          </ListItemText>
+        </ListItem>
+      );
+    }
+
     return (
       <List>
-        {Array(5)
-          .fill(0)
-          .map((_, index) => (
-            <TaskListItem key={index} />
-          ))}
+        {tasks.map(task => (
+          <TaskListItem key={task.id} task={task} />
+        ))}
+        {noTask}
       </List>
     );
   }
 }
 
-export default TaskList;
+export default connect(state => ({
+  tasks: state.tasks
+}))(TaskList);
