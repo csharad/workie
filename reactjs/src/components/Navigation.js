@@ -17,7 +17,7 @@ function BtnLink(props) {
 
 class Navigation extends Component {
   render() {
-    const { isLogged, classes } = this.props;
+    const { name, isLogged, classes } = this.props;
 
     let menu;
     if (isLogged) {
@@ -42,7 +42,7 @@ class Navigation extends Component {
       <AppBar position="sticky">
         <Toolbar>
           <BtnLink className={classes.logo} to="/">
-            Workie
+            Workie {name}
           </BtnLink>
           {menu}
         </Toolbar>
@@ -59,6 +59,7 @@ class Navigation extends Component {
 
 export default withStyles(styles)(
   connect(state => ({
-    isLogged: !!state.me
+    isLogged: !!state.me,
+    name: state.me && state.me.full_name.split(' ')[0]
   }))(withRouter(Navigation))
 );
