@@ -28,6 +28,16 @@ export const logout = () => async dispatch => {
   dispatch(resetState());
 };
 
+export const deleteMe = password => async dispatch => {
+  await axios.post('/users/me/delete', password);
+  dispatch(resetState());
+};
+
+export const updateMe = user => async dispatch => {
+  const { data } = await axios.patch('/users/me', user);
+  dispatch(setMe(data));
+};
+
 export function setMe(user) {
   return {
     type: 'SET_ME',
