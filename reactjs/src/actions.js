@@ -2,6 +2,7 @@ import axios from './axios';
 
 export const login = credentials => async dispatch => {
   const { data } = await axios.post('/login', credentials);
+  dispatch(resetState());
   dispatch(setMe(data));
 };
 

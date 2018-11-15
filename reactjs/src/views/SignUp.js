@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import {
-  Card,
-  Button,
-  TextField,
-  Grid,
-  Typography,
-  withStyles
-} from '@material-ui/core';
+import { Card, Button, Grid, Typography, withStyles } from '@material-ui/core';
+import { Formik } from 'formik';
+import * as yup from 'yup';
+import VTextField from '../components/VTextField';
+import axios from '../axios';
+import { connect } from 'react-redux';
+import { login } from '../actions';
+import { withRouter } from 'react-router-dom';
 
 const styles = theme => ({
   container: {
@@ -31,6 +31,31 @@ class SignUp extends Component {
   render() {
     const { classes } = this.props;
 
+    const form = ({ handleSubmit, isSubmitting }) => (
+      <form className={classes.form} onSubmit={handleSubmit}>
+        <VTextField label="Name" name="name" fullWidth margin="normal" />
+        <VTextField label="Email" name="email" fullWidth margin="normal" />
+        <VTextField
+          label="Password"
+          name="password"
+          type="password"
+          fullWidth
+          margin="normal"
+        />
+
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          className={classes.button}
+          disabled={isSubmitting}
+        >
+          Sign Up
+        </Button>
+      </form>
+    );
+
     return (
       <Grid container justify="center" className={classes.container}>
         <Grid item md={3}>
@@ -50,30 +75,61 @@ class SignUp extends Component {
               </Grid>
             </Grid>
 
-            <form className={classes.form}>
-              <TextField label="Name" fullWidth margin="normal" />
-              <TextField label="Email" fullWidth margin="normal" />
-              <TextField
-                label="Password"
-                type="password"
-                fullWidth
-                margin="normal"
-              />
-
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.button}
-              >
-                Sign Up
-              </Button>
-            </form>
+            <Formik
+              initialValues={{
+                name: '',
+                email: '',
+                password: ''
+              }}
+              validationSchema={yup.object().shape({
+                name: yup.string().required(),
+                email: yup
+                  .string()
+                  .email()
+                  .required(),
+                password: yup
+                  .string()
+                  .min(8)
+                  .required()
+              })}
+              onSubmit={this.trySignUp}
+            >
+              {form}
+            </Formik>
           </Card>
         </Grid>
       </Grid>
     );
   }
+
+  trySignUp = async (form, action) => {
+    const { dispatch, history } = this.props;
+    try {
+      await axios.post('/users', {
+        full_name: form.name,
+        email: form.email,
+        password: form.password
+      });
+      await dispatch(
+        login({
+          email: form.email,
+          password: form.password
+        })
+      );
+      history.push('/');
+    } catch (e) {
+      const kind = e.response.data.kind;
+      if (kind === 'NOT_UNIQUE') {
+        action.setErrors({
+          email: 'This email is already used.'
+        });
+      } else {
+        action.setSubmitting(false);
+        throw e;
+      }
+    }
+    action.setSubmitting(false);
+  };
 }
 
-export default withStyles(styles)(SignUp);
+export default connect()(withStyles(styles)(withRouter(SignUp)));
