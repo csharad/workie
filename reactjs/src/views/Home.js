@@ -6,7 +6,8 @@ import {
   withStyles,
   InputAdornment,
   IconButton,
-  Icon
+  Icon,
+  Typography
 } from '@material-ui/core';
 import TaskList from '../components/TaskList';
 import { connect } from 'react-redux';
@@ -21,16 +22,29 @@ const styles = theme => ({
   input: {
     padding: theme.spacing.unit * 2.5,
     fontSize: '1.3rem'
+  },
+  message: {
+    textAlign: 'center',
+    margin: `${theme.spacing.unit * 3}px 0`
   }
 });
 
 class Home extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, isLogged } = this.props;
 
     return (
       <Grid container justify="center">
         <Grid item md={5}>
+          {!isLogged && (
+            <Typography
+              variant="display1"
+              color="textPrimary"
+              className={classes.message}
+            >
+              You need to be logged in first
+            </Typography>
+          )}
           <Paper className={classes.topSpace}>
             <Formik
               initialValues={{ task: '' }}
@@ -54,7 +68,7 @@ class Home extends Component {
                       },
                       endAdornment: (
                         <InputAdornment>
-                          <IconButton type="submit">
+                          <IconButton type="submit" disabled={!isLogged}>
                             <Icon>playlist_add</Icon>
                           </IconButton>
                         </InputAdornment>
@@ -63,6 +77,7 @@ class Home extends Component {
                     value={values.task}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={!isLogged}
                   />
                 </form>
               )}
@@ -84,4 +99,6 @@ class Home extends Component {
   };
 }
 
-export default connect()(withStyles(styles)(Home));
+export default connect(state => ({
+  isLogged: !!state.me
+}))(withStyles(styles)(Home));
