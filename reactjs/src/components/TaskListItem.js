@@ -6,6 +6,8 @@ import {
   IconButton,
   withStyles
 } from '@material-ui/core';
+import { connect } from 'react-redux';
+import { toggleTaskCompleted } from '../actions';
 
 const styles = theme => ({
   listItem: {
@@ -30,13 +32,17 @@ class TaskListItem extends Component {
     let tick;
     if (task.is_completed) {
       tick = (
-        <IconButton className={classes.check}>
+        <IconButton
+          className={classes.check}
+          color="secondary"
+          onClick={this.toggleCompleted}
+        >
           <Icon>done_all</Icon>
         </IconButton>
       );
     } else {
       tick = (
-        <IconButton className={classes.check}>
+        <IconButton className={classes.check} onClick={this.toggleCompleted}>
           <Icon>done</Icon>
         </IconButton>
       );
@@ -54,6 +60,11 @@ class TaskListItem extends Component {
       </ListItem>
     );
   }
+
+  toggleCompleted = async () => {
+    const { task, dispatch } = this.props;
+    await dispatch(toggleTaskCompleted(task.id, !task.is_completed));
+  };
 }
 
-export default withStyles(styles)(TaskListItem);
+export default connect()(withStyles(styles)(TaskListItem));

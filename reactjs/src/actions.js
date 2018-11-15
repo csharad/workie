@@ -56,6 +56,13 @@ export const listAllTasks = () => async (dispatch, getState) => {
   }
 };
 
+export const toggleTaskCompleted = (id, isCompleted) => async dispatch => {
+  const { data } = await axios.patch(`/tasks/${id}`, {
+    is_completed: isCompleted
+  });
+  dispatch(updateTask(data));
+};
+
 export function addTask(task) {
   return {
     type: 'ADD_TASK',
@@ -71,3 +78,11 @@ export function setTasks(tasks) {
   };
 }
 setTasks.TYPE = 'SET_TASKS';
+
+export function updateTask(task) {
+  return {
+    type: 'UPDATE_TASK',
+    task
+  };
+}
+updateTask.TYPE = 'UPDATE_TASK';

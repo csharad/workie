@@ -1,4 +1,4 @@
-import { setMe, resetState, addTask, setTasks } from './actions';
+import { setMe, resetState, addTask, setTasks, updateTask } from './actions';
 
 const initialState = {
   me: null,
@@ -27,6 +27,16 @@ export default function(state = initialState, action) {
       return {
         ...state,
         tasks: action.tasks
+      };
+    case updateTask.TYPE:
+      return {
+        ...state,
+        tasks: state.tasks.map(task => {
+          if (task.id === action.task.id) {
+            return action.task;
+          }
+          return task;
+        })
       };
     default:
       return state;
