@@ -22,6 +22,9 @@ const styles = theme => ({
   },
   trash: {
     marginRight: theme.spacing.unit
+  },
+  strikeThrough: {
+    textDecoration: 'line-through'
   }
 });
 
@@ -51,7 +54,13 @@ class TaskListItem extends Component {
     return (
       <ListItem disableGutters classes={{ root: classes.listItem }}>
         {tick}
-        <ListItemText classes={{ root: classes.listItemText }}>
+        <ListItemText
+          classes={{
+            root: `${classes.listItemText} ${
+              task.is_completed ? classes.strikeThrough : ''
+            }`
+          }}
+        >
           {task.task}
         </ListItemText>
         <IconButton className={classes.trash} onClick={this.handleDelete}>
